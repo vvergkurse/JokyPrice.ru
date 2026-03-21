@@ -12,7 +12,7 @@
         <div class="header-content">
             <div style="display:flex; align-items:center; gap:16px;">
                 <div class="logo-circle">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Joker_card.svg/512px-Joker_card.svg.png" alt="Joky">
+                    <img src="https://avatars.mds.yandex.net/get-shedevrum/11478110/img_6435969a1aa811efbf9f9a79ffaf5bd2/orig" alt="Joky">
                 </div>
                 <div>
                     <h1 class="logo-font">JokyPrice</h1>
@@ -220,7 +220,7 @@
 
             const res = await fetch(webhookUrl, { method: 'POST', body: formData });
             if (res.ok) {
-                alert('✅ ЗАКАЗ ОТПРАВЛЕН!\nУчастники Discord могут взять его реакцией 👍 или отменить ❌');
+                alert('✅ ЗАКАЗ ОТПРАВЛЕН!');
                 cart = []; renderCart(); closeModal(); document.getElementById('order-form').reset();
             } else alert('Ошибка отправки.');
         }
