@@ -8,11 +8,12 @@
     <link rel="stylesheet" href="jokyprice.css">
 </head>
 <body>
+    <!-- УЛУЧШЕННАЯ ШАПКА -->
     <header>
         <div class="header-content">
             <div style="display:flex; align-items:center; gap:16px;">
                 <div class="logo-circle">
-                    <img src="https://avatars.mds.yandex.net/get-shedevrum/11478110/img_6435969a1aa811efbf9f9a79ffaf5bd2/orig" alt="Joky">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Joker_card.svg/512px-Joker_card.svg.png" alt="Joky">
                 </div>
                 <div>
                     <h1 class="logo-font">JokyPrice</h1>
@@ -24,7 +25,7 @@
 
     <div class="hero">
         <div class="hero-badge">
-            <div class="hero-badge-dot"></div>
+            <div style="width:8px;height:8px;background:#00ff9d;border-radius:50%;animation:pulse 2s infinite;"></div>
             Работает 24/7 • Моментальная доставка
         </div>
         <h2 class="logo-font" style="font-size:52px; line-height:1.1; font-weight:700;">Магазин предметов<br>для Minecraft</h2>
@@ -36,207 +37,76 @@
 
         <div id="cart">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                <h3 style="font-size:24px; font-weight:600;">🛒 Корзина <span id="cart-count" style="background:#00ff9d; color:#000; font-size:13px; padding:4px 14px; border-radius:9999px;">0</span></h3>
-                <button onclick="clearCart()" style="color:#f87171; background:none; border:none;">Очистить</button>
+                <h3 style="font-size:24px; font-weight:600;">🛒 Корзина <span id="cart-count" style="background:#00ff9d;color:#000;font-size:13px;padding:4px 14px;border-radius:9999px;">0</span></h3>
+                <button onclick="clearCart()" id="clear-btn" class="clear-btn" style="color:#f87171;background:none;border:none;font-size:15px;">Очистить корзину</button>
             </div>
-            <div id="cart-list"></div>
-            <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:24px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+            
+            <div id="cart-list" style="min-height:100px;"></div>
+            
+            <!-- Плейсхолдер пустой корзины -->
+            <div id="empty-cart" style="text-align:center; padding:40px 20px; color:#64748b; font-size:15px;">
+                Корзина пуста<br>Добавьте товары из каталога ↓
+            </div>
+
+            <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
                     <span style="color:#94a3b8;">Итого</span>
-                    <span id="total-price" style="font-size:32px; font-weight:700; color:#00ff9d;">0 АРЫ</span>
+                    <span id="total-price" style="font-size:32px;font-weight:700;color:#00ff9d;">0 АРЫ</span>
                 </div>
                 <button onclick="openModal()" class="order-btn">ОФОРМИТЬ ЗАКАЗ</button>
             </div>
         </div>
     </div>
 
-    <div id="modal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
-                <h3 style="font-size:24px;">Оформление заказа</h3>
-                <button onclick="closeModal()" style="font-size:32px; color:#64748b;">×</button>
-            </div>
-            <form id="order-form" onsubmit="submitOrder(event)">
-                <label>Никнейм в Minecraft</label>
-                <input type="text" id="nick" required placeholder="StevePro">
-                
-                <label style="margin-top:20px;">Скриншот АРОВ (обязательно)</label>
-                <input type="file" id="screenshot" accept="image/*" required>
-                
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
-                    <div><label>Координаты доставки (X Y Z)</label><input type="text" id="delivery" required placeholder="123 64 -456"></div>
-                    <div><label>Координаты выплаты</label><input type="text" id="payout" required placeholder="789 70 123"></div>
-                </div>
-                
-                <label style="margin-top:20px;">Комментарий (не обязательно)</label>
-                <textarea id="comment" rows="3" placeholder="Доставить как можно быстрее..."></textarea>
-                
-                <button type="submit" class="order-btn" style="margin-top:32px;">ОТПРАВИТЬ ЗАКАЗ В DISCORD</button>
-            </form>
-        </div>
-    </div>
+    <!-- ТОАСТ УВЕДОМЛЕНИЕ -->
+    <div id="add-toast">✅ Добавлено в корзину!</div>
+
+    <!-- МОДАЛКА И ФУТЕР (без изменений) -->
+    <div id="modal">... (твой старый код модалки) ...</div>
 
     <footer>
         JokyPrice © 2026 • 
         <button onclick="adminPanel()" style="background:none;border:none;color:#00ff9d;cursor:pointer;">Админ-панель</button>
-        • Защита от спама активна
     </footer>
 
     <script>
-        const products = [
-            { id:1, name:"Железные блоки x64", price:1, image:"https://ru.minecraft.wiki/images/Железный_блок_JE4_BE3.png?41bce" },
-            { id:2, name:"Смолянные блоки x128", price:1, image:"https://minecraft.wiki/images/Block_of_Resin_JE1_BE1.png?e9586" },
-            { id:3, name:"Проворство III", price:24, image:"https://minecraft.wiki/images/Netherite_Boots_%28item%29_BE1.png?b8363&format=original"}
-        ];
+        // === ТОВАРЫ ===
+        const products = [ /* твои товары */ ];
 
         let cart = [];
 
-        function renderProducts() {
-            const container = document.getElementById('products');
-            container.innerHTML = '';
-            products.forEach((p, i) => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <div class="product-image">
-                        <img src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x220/111827/00ff9d?text=${encodeURIComponent(p.name)}'">
-                    </div>
-                    <div class="product-info">
-                        <h3>${p.name}</h3>
-                        <div style="display:flex;justify-content:space-between;align-items:baseline;">
-                            <span class="price">${p.price}</span>
-                            <span style="color:#64748b;font-size:14px;">АРЫ</span>
-                        </div>
-                        <button onclick="addToCart(${i})" class="add-btn">Добавить в корзину</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+        function renderProducts() { /* твой код */ }
 
         function addToCart(i) {
-            const product = products[i];
-            const existing = cart.find(item => item.id === product.id);
-            if (existing) existing.qty++;
-            else cart.push({...product, qty: 1});
+            // ... твой код добавления ...
+
+            // === АНИМАЦИЯ + УВЕДОМЛЕНИЕ ===
+            document.getElementById('cart').classList.add('shake');
+            setTimeout(() => document.getElementById('cart').classList.remove('shake'), 600);
+
+            const toast = document.getElementById('add-toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+
             renderCart();
-            const cartEl = document.getElementById('cart');
-            cartEl.style.borderColor = '#00ff9d';
-            setTimeout(() => cartEl.style.borderColor = 'rgba(255,255,255,0.1)', 700);
         }
 
         function renderCart() {
-            const list = document.getElementById('cart-list');
-            const totalEl = document.getElementById('total-price');
-            const countEl = document.getElementById('cart-count');
-            list.innerHTML = '';
-            let total = 0;
-            cart.forEach((item, i) => {
-                const itemTotal = item.price * item.qty;
-                total += itemTotal;
-                const div = document.createElement('div');
-                div.className = 'cart-item';
-                div.innerHTML = `
-                    <div>
-                        <div style="font-weight:500;">${item.name}</div>
-                        <div style="font-size:13px; color:#64748b;">×${item.qty}</div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-family:monospace; color:#00ff9d; font-weight:600;">${itemTotal} АРЫ</div>
-                        <button onclick="removeFromCart(${i})" style="color:#f87171; background:none; border:none; font-size:22px; cursor:pointer;">×</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-            totalEl.textContent = total + ' АРЫ';
-            countEl.textContent = cart.length;
+            // ... твой код ...
+
+            const clearBtn = document.getElementById('clear-btn');
+            const emptyCart = document.getElementById('empty-cart');
+
+            if (cart.length > 0) {
+                clearBtn.classList.add('show');
+                emptyCart.style.display = 'none';
+            } else {
+                clearBtn.classList.remove('show');
+                emptyCart.style.display = 'block';
+            }
         }
 
-        function removeFromCart(i) { cart.splice(i, 1); renderCart(); }
-        function clearCart() { if (confirm('Очистить корзину?')) { cart = []; renderCart(); } }
-        function openModal() { if (cart.length === 0) return alert('Корзина пуста!'); document.getElementById('modal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-
-        // === ВАЛИДАЦИЯ + КУЛДАУН + БАН ===
-        async function submitOrder(e) {
-            e.preventDefault();
-
-            const nick = document.getElementById('nick').value.trim();
-            const delivery = document.getElementById('delivery').value.trim();
-            const payout = document.getElementById('payout').value.trim();
-            const comment = document.getElementById('comment').value.trim();
-            const file = document.getElementById('screenshot').files[0];
-
-            if (nick.length < 4) return alert('Ник должен быть минимум 4 символа!');
-            if (!delivery || !payout) return alert('Укажите координаты доставки и выплаты!');
-            if (!/^-?\d+\s+-?\d+\s+-?\d+$/.test(delivery) || !/^-?\d+\s+-?\d+\s+-?\d+$/.test(payout)) {
-                return alert('Координаты должны состоять из 3 чисел через пробел (можно отрицательные)!');
-            }
-            if (!file) return alert('Прикрепи скриншот АРОВ!');
-
-            const now = Date.now();
-            if (localStorage.getItem('banned') === 'true') return alert('Ваш IP заблокирован за спам.');
-
-            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            orders = orders.filter(t => now - t < 600000);
-            if (orders.length >= 5) {
-                localStorage.setItem('banned', 'true');
-                return alert('Вы сделали 5 заказов за 10 минут.\nВаш IP заблокирован (защита от спама и ботов).');
-            }
-
-            if (localStorage.getItem('lastOrder') && now - localStorage.getItem('lastOrder') < 60000) {
-                return alert('Кулдаун 1 минута между заказами\n(Это защита от спама и ботов)');
-            }
-
-            orders.push(now);
-            localStorage.setItem('orders', JSON.stringify(orders));
-            localStorage.setItem('lastOrder', now);
-
-            // === DISCORD С КНОПКАМИ (реакциями) ===
-            const itemsText = cart.map(item => `• ${item.name} ×${item.qty}`).join('\n');
-            const totalAries = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-            const webhookUrl = 'https://discord.com/api/webhooks/1484810417090990130/YA4PHS-SvKAgh8RcZtyR0fbCYtNVqTTPyrz0Z-4r35hJY9YdycImhKXM_49UE3LzaRDo';
-
-            const embed = {
-                title: "🛒 НОВЫЙ ЗАКАЗ — JokyPrice",
-                description: `**Ник:** ${nick}\n**Заказ:**\n${itemsText}`,
-                color: 0x00ff9d,
-                fields: [
-                    { name: "🚀 Доставка", value: delivery, inline: true },
-                    { name: "💰 Выплата", value: payout, inline: true },
-                    { name: "💎 Итого", value: `${totalAries} АРЫ`, inline: true },
-                    { name: "💬 Комментарий", value: comment || "—", inline: false },
-                    { name: "Действия", value: "👍 — Взять заказ\n❌ — Отменить заказ", inline: false }
-                ]
-            };
-
-            const formData = new FormData();
-            formData.append('payload_json', JSON.stringify({
-                content: `**@here** Новый заказ от **${nick}**!\nРеагируйте 👍 чтобы взять заказ или ❌ чтобы отменить`,
-                embeds: [embed]
-            }));
-            formData.append('file', file, 'скриншот_аров.png');
-
-            const res = await fetch(webhookUrl, { method: 'POST', body: formData });
-            if (res.ok) {
-                alert('✅ ЗАКАЗ ОТПРАВЛЕН!');
-                cart = []; renderCart(); closeModal(); document.getElementById('order-form').reset();
-            } else alert('Ошибка отправки.');
-        }
-
-        // === АДМИН-ПАНЕЛЬ ===
-        function adminPanel() {
-            const pass = prompt('Введите пароль:');
-            if (pass === 'jokyadmin123') {
-                if (confirm('Разбанить пользователя?')) {
-                    localStorage.removeItem('banned');
-                    localStorage.removeItem('orders');
-                    localStorage.removeItem('lastOrder');
-                    alert('Пользователь разбанен!');
-                }
-            } else alert('Неверный пароль!');
-        }
+        // Остальные функции (remove, clear, openModal, submitOrder, adminPanel) — оставь как были
 
         renderProducts();
         renderCart();
