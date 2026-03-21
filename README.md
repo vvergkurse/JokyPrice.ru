@@ -1,2 +1,0 @@
-# JokyPrice.ru
-Joky Price
