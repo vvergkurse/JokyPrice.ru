@@ -3,7 +3,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-    background: linear-gradient(135deg, #0a0f1c 0%, #1a2333 100%);
+    background: #000000;
     color: #e0f2ff;
     font-family: 'Inter', system_ui, sans-serif;
     min-height: 100vh;
