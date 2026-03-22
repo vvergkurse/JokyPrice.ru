@@ -139,16 +139,3 @@ label { display:block; margin-bottom:8px; font-size:14px; color:#94a3b8; }
 footer { text-align:center; padding:40px 20px; color:#64748b; margin-top:80px; }
 
 @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.4} }
-
-/* === КНОПКА "ОЧИСТИТЬ" — ПОЯВЛЯЕТСЯ ТОЛЬКО КОГДА ЕСТЬ ТОВАРЫ === */
-#clear-btn {
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.4s ease;
-    font-size: 15px;
-}
-
-#clear-btn.show {
-    opacity: 1;
-    pointer-events: all;
-}

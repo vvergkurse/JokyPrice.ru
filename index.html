@@ -36,15 +36,10 @@
 
         <div id="cart">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                <h3 style="font-size:24px; font-weight:600;">🛒 Корзина 
-                    <span id="cart-count" style="background:#00ff9d; color:#000; font-size:13px; padding:4px 14px; border-radius:9999px;">0</span>
-                </h3>
-                <!-- Кнопка теперь с id и классом -->
-                <button onclick="clearCart()" id="clear-btn" class="clear-btn" style="color:#f87171; background:none; border:none;">Очистить корзину</button>
+                <h3 style="font-size:24px; font-weight:600;">🛒 Корзина <span id="cart-count" style="background:#00ff9d; color:#000; font-size:13px; padding:4px 14px; border-radius:9999px;">0</span></h3>
+                <button onclick="clearCart()" style="color:#f87171; background:none; border:none;">Очистить</button>
             </div>
-            
             <div id="cart-list"></div>
-            
             <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:24px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
                     <span style="color:#94a3b8;">Итого</span>
@@ -125,17 +120,17 @@
             if (existing) existing.qty++;
             else cart.push({...product, qty: 1});
             renderCart();
+            const cartEl = document.getElementById('cart');
+            cartEl.style.borderColor = '#00ff9d';
+            setTimeout(() => cartEl.style.borderColor = 'rgba(255,255,255,0.1)', 700);
         }
 
         function renderCart() {
             const list = document.getElementById('cart-list');
             const totalEl = document.getElementById('total-price');
             const countEl = document.getElementById('cart-count');
-            const clearBtn = document.getElementById('clear-btn');
-
             list.innerHTML = '';
             let total = 0;
-
             cart.forEach((item, i) => {
                 const itemTotal = item.price * item.qty;
                 total += itemTotal;
@@ -153,37 +148,84 @@
                 `;
                 list.appendChild(div);
             });
-
             totalEl.textContent = total + ' АРЫ';
             countEl.textContent = cart.length;
-
-            // === КНОПКА ОЧИСТИТЬ ПОЯВЛЯЕТСЯ ТОЛЬКО КОГДА ЕСТЬ ТОВАРЫ ===
-            if (cart.length > 0) {
-                clearBtn.classList.add('show');
-            } else {
-                clearBtn.classList.remove('show');
-            }
         }
 
         function removeFromCart(i) { cart.splice(i, 1); renderCart(); }
-        function clearCart() { 
-            if (confirm('Очистить корзину?')) { 
-                cart = []; 
-                renderCart(); 
-            } 
-        }
-        function openModal() { 
-            if (cart.length === 0) return alert('Корзина пуста!'); 
-            document.getElementById('modal').style.display = 'flex'; 
-        }
+        function clearCart() { if (confirm('Очистить корзину?')) { cart = []; renderCart(); } }
+        function openModal() { if (cart.length === 0) return alert('Корзина пуста!'); document.getElementById('modal').style.display = 'flex'; }
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-        // ВАЛИДАЦИЯ + КУЛДАУН + БАН + DISCORD (оставлено без изменений)
+        // === ВАЛИДАЦИЯ + КУЛДАУН + БАН ===
         async function submitOrder(e) {
-            // ... (твой текущий код submitOrder полностью) ...
-            // (я не менял эту часть, просто вставь свой старый код сюда)
+            e.preventDefault();
+
+            const nick = document.getElementById('nick').value.trim();
+            const delivery = document.getElementById('delivery').value.trim();
+            const payout = document.getElementById('payout').value.trim();
+            const comment = document.getElementById('comment').value.trim();
+            const file = document.getElementById('screenshot').files[0];
+
+            if (nick.length < 4) return alert('Ник должен быть минимум 4 символа!');
+            if (!delivery || !payout) return alert('Укажите координаты доставки и выплаты!');
+            if (!/^-?\d+\s+-?\d+\s+-?\d+$/.test(delivery) || !/^-?\d+\s+-?\d+\s+-?\d+$/.test(payout)) {
+                return alert('Координаты должны состоять из 3 чисел через пробел (можно отрицательные)!');
+            }
+            if (!file) return alert('Прикрепи скриншот АРОВ!');
+
+            const now = Date.now();
+            if (localStorage.getItem('banned') === 'true') return alert('Ваш IP заблокирован за спам.');
+
+            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders = orders.filter(t => now - t < 600000);
+            if (orders.length >= 5) {
+                localStorage.setItem('banned', 'true');
+                return alert('Вы сделали 5 заказов за 10 минут.\nВаш IP заблокирован (защита от спама и ботов).');
+            }
+
+            if (localStorage.getItem('lastOrder') && now - localStorage.getItem('lastOrder') < 60000) {
+                return alert('Кулдаун 1 минута между заказами\n(Это защита от спама и ботов)');
+            }
+
+            orders.push(now);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            localStorage.setItem('lastOrder', now);
+
+            // === DISCORD С КНОПКАМИ (реакциями) ===
+            const itemsText = cart.map(item => `• ${item.name} ×${item.qty}`).join('\n');
+            const totalAries = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+            const webhookUrl = 'https://discord.com/api/webhooks/1484810417090990130/YA4PHS-SvKAgh8RcZtyR0fbCYtNVqTTPyrz0Z-4r35hJY9YdycImhKXM_49UE3LzaRDo';
+
+            const embed = {
+                title: "🛒 НОВЫЙ ЗАКАЗ — JokyPrice",
+                description: `**Ник:** ${nick}\n**Заказ:**\n${itemsText}`,
+                color: 0x00ff9d,
+                fields: [
+                    { name: "🚀 Доставка", value: delivery, inline: true },
+                    { name: "💰 Выплата", value: payout, inline: true },
+                    { name: "💎 Итого", value: `${totalAries} АРЫ`, inline: true },
+                    { name: "💬 Комментарий", value: comment || "—", inline: false },
+                    { name: "Действия", value: "👍 — Взять заказ\n❌ — Отменить заказ", inline: false }
+                ]
+            };
+
+            const formData = new FormData();
+            formData.append('payload_json', JSON.stringify({
+                content: `**@here** Новый заказ от **${nick}**!\nРеагируйте 👍 чтобы взять заказ или ❌ чтобы отменить`,
+                embeds: [embed]
+            }));
+            formData.append('file', file, 'скриншот_аров.png');
+
+            const res = await fetch(webhookUrl, { method: 'POST', body: formData });
+            if (res.ok) {
+                alert('✅ ЗАКАЗ ОТПРАВЛЕН!\nУчастники Discord могут взять его реакцией 👍 или отменить ❌');
+                cart = []; renderCart(); closeModal(); document.getElementById('order-form').reset();
+            } else alert('Ошибка отправки.');
         }
 
+        // === АДМИН-ПАНЕЛЬ ===
         function adminPanel() {
             const pass = prompt('Введите пароль:');
             if (pass === 'jokyadmin123') {
